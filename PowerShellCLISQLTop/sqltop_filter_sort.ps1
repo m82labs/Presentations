@@ -1,3 +1,4 @@
+## SAME OLD STUFF ##
 # Create a synchronized hashtable
 $StateData = [System.Collections.Hashtable]::Synchronized(@{})
 $Stop = $False
@@ -23,9 +24,9 @@ $Session.Runspace = $Runspace
 $null = $Session.AddScript($Sb)
 $Handle = $Session.BeginInvoke()
 
-
-# Set the default sort
-$Sort = 'CPU'
+## THIS IS NEW! ##
+# Set the default sort/columns
+$View = 'CPU'
 
 # Set up sorting options
 $SortOptions = @{
@@ -59,9 +60,13 @@ $DisplayOptions = @{  # <<= CAVEAT: You have to include ALL columns you want dis
 Clear-Host
 [Console]::CursorVisible = $False # <<== This particlular app needs no cursor
 while(-not $Stop) {
+    # Had to add some logic to allow re-draw to smooth out menu transitions
     $Start = Get-Date
     if ( $StateData.HasData -or $Redraw ) {
-         $Result = $StateData.Data | Sort-Object -Property $SortOptions.$Sort | Select-Object -First 10 | Format-Table -Property $DisplayOptions.$Sort | Out-String
+         $Result = $StateData.Data  | Sort-Object -Property $SortOptions.$View `
+                                    | Select-Object -First 10 `
+                                    | Format-Table -Property $DisplayOptions.$View `
+                                    | Out-String
          # Reset HasData
          $StateData.HasData = $False
          # Reset Redraw
@@ -88,11 +93,11 @@ while(-not $Stop) {
             $Session.Stop()
             $Runspace.Dispose()
         } elseif ( $key -eq 'c' ) {
-            $Sort = 'CPU'
+            $View = 'CPU'
             $Redraw = $True
             Clear-Host
         } elseif ( $key -eq 't' ) {
-            $Sort = 'Threads'
+            $View = 'Threads'
             $Redraw = $True
             Clear-Host
         }

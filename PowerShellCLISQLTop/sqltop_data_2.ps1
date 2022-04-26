@@ -1,5 +1,5 @@
 # Create a synchronized hashtable
-$StateData = [System.Collections.Hashtable]::Synchronized(@{})
+$StateData = [System.Collections.Hashtable]::Synchronized([System.Collections.Hashtable]::new())
 
 $Stop = $False
 # Add some data to the hashtable (creates new property)
@@ -14,7 +14,8 @@ $Runspace.SessionStateProxy.SetVariable("StateData",$StateData)
 # Capture process data in a runspace
 $Sb = {
     while($True) {
-        Start-Sleep -Seconds 2
+        # We pause here for 2 seconds between captures, how do we keep the UI available?
+        Start-Sleep -Seconds 2 
 
         # Get new data
         $StateData.Data = Get-Process | Sort-Object -Property 'CPU' -Descending `
@@ -30,6 +31,7 @@ $Session.Runspace = $Runspace
 $null = $Session.AddScript($Sb)
 $Handle = $Session.BeginInvoke()
 
+$Stop = $False
 Clear-Host
 while(-not $Stop) {
     [Console]::CursorVisible = $False
